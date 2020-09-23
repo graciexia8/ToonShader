@@ -2,8 +2,8 @@
 
 window.InitDemo = async function() {
 	try {
-		const vertexShader = await loadTextResource("./../Shaders/shader.vs.glsl");
-		const fragmentShader = await loadTextResource("./../Shaders/shader.fs.glsl");
+		const vertexShader = await loadTextResource("./Shaders/shader.vs.glsl");
+		const fragmentShader = await loadTextResource("./Shaders/shader.fs.glsl");
 		const modelData = await loadJSONResource("./../models/json_models/blancDeChine.json");
 		runDemo(vertexShader, fragmentShader, modelData);
 	}
