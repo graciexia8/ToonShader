@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    p {
+      font-family: sans-serif;
+    }
+
+    .parentContainer {
+      display: flex;
+      flex-wrap: wrap;
+    }
+  </style>
+  </style>
+</head>
+
+<body onload="InitDemo();">
+  <div class="parentContainer">
+    <div class="modelContainer">
+      <canvas id = "game-surface" width="500" height="500" >
+        browser does not support html5
+      </canvas>
+    </div>
+    <div class="slidecontainer">
+      <p>Threshold: <span id="thresholdVal"></span></p>
+      <input id="threshold_id" type="range" min="0" max="100" value="50">
+    </div>
+  </div>
+  <script src="lib/gl-matrix.js"></script>
+  <script src="lib/helper.js"></script>\
+  <script src="javascript/model.js"></script>
+  <script src="javascript/render.js"></script>
+  <script src="javascript/handlers.js"></script>
+  <script src="javascript/app.js"></script>
+</body>
