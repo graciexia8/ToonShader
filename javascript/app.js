@@ -137,7 +137,7 @@ var renderScene = function(vertShadertext, fragShadertext, diffuseShadertext, mo
 
 	gl.compileShader(fragmentShader);
 	if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
-		console.error('ERROR compiling fragment shader!', gl.getShaderInfoLog(fragmentShader));
+		console.error('ERROR compiling bw fragment shader!', gl.getShaderInfoLog(fragmentShader));
 		return;
 	}
 
@@ -147,7 +147,7 @@ var renderScene = function(vertShadertext, fragShadertext, diffuseShadertext, mo
 		return;
 	}
 
-	// Create diffuse shader program alternative
+	// Create diffuse shader program alternative, attach vertex and fragment shader to program
 	let program_diffuse = gl.createProgram();
 	gl.attachShader(program_diffuse, vertexShader);
 	gl.attachShader(program_diffuse, diffShader);
@@ -157,6 +157,7 @@ var renderScene = function(vertShadertext, fragShadertext, diffuseShadertext, mo
 		console.error('ERROR linking program!', gl.getProgramInfoLog(program_diffuse));
 		return;
 	}
+
 	gl.validateProgram(program_diffuse);
 	if (!gl.getProgramParameter(program_diffuse, gl.VALIDATE_STATUS)) {
 		console.error('ERROR validating program!', gl.getProgramInfoLog(program_diffuse));
@@ -164,7 +165,7 @@ var renderScene = function(vertShadertext, fragShadertext, diffuseShadertext, mo
 	}
 
 
-	// create the current webGL Program, attach vertex and fragment shader to program
+	// create the current webGL BW Program, attach vertex and fragment shader to program
 	let program = gl.createProgram();
 	gl.attachShader(program, vertexShader);
 	gl.attachShader(program, fragmentShader);
@@ -174,6 +175,7 @@ var renderScene = function(vertShadertext, fragShadertext, diffuseShadertext, mo
 		console.error('ERROR linking program!', gl.getProgramInfoLog(program));
 		return;
 	}
+
 	gl.validateProgram(program);
 	if (!gl.getProgramParameter(program, gl.VALIDATE_STATUS)) {
 		console.error('ERROR validating program!', gl.getProgramInfoLog(program));
@@ -185,9 +187,9 @@ var renderScene = function(vertShadertext, fragShadertext, diffuseShadertext, mo
 	// Create light model
 	const light = createLight();
 
+	// Create a render object for the objects in the scene
 	const objectsInScene = new Render(model);
 
 	const events = new eventHandler(self);
 	events.animate();
-	
 }
