@@ -7,8 +7,12 @@ function eventHandler(scene) {
 
   const self = this;
 
+  // Threshold HTML elements
   const thresholdSlider = document.getElementById("threshold_id");
   const thresholdOutput = document.getElementById("thresholdVal");
+
+  // Toggle HTML elements
+  const toggleCheckbox = document.getElementById("renderOption");
 
   // Private variables
   const canvas = scene.canvas;
@@ -52,11 +56,27 @@ function eventHandler(scene) {
     }
   };
 
+  // Event handling for when user wants to toggle between diffuse lighting view vs B&W shading
+  self.toggle_clicked = function (event) {
+
+  }
+
   // Initialize and create mouse event types
   self.createAllEventHandlers = function () {
     canvas.addEventListener('mousedown', self.mouse_drag_started, false);
     canvas.addEventListener('mouseup', self.mouse_drag_ended, false);
     canvas.addEventListener('mousemove', self.mouse_dragged, false);
+
+    toggleCheckbox.addEventListener( 'click', function() {
+      // If the checkbox is checked, display the output text
+      if (toggleCheckbox.checked == true){
+        console.log("checked");
+        scene.toggleRender = true;
+      } else {
+        console.log("unchecked");
+        scene.toggleRender = false;
+      }
+    });
 
     // Read Threshold Slider value into object to Render
     // Threshold goes from 0.0-1.0

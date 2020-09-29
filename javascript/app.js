@@ -4,19 +4,20 @@ window.InitDemo = async function() {
 	try {
 		const vertexShader = await loadTextResource("./Shaders/shader.vs.glsl");
 		const fragmentShader = await loadTextResource("./Shaders/shader.fs.glsl");
+		const diffuseShader = await loadTextResource("./Shaders/diffuseShader.glsl");
 		const modelData = await loadJSONResource("./models/json_models/blancDeChine.json");
-		runDemo(vertexShader, fragmentShader, modelData);
+		runDemo(vertexShader, fragmentShader, diffuseShader, modelData);
 	}
 	catch(e){
 		alert(e);
 	}
 };
 
-window.runDemo = function (vertShadertext, fragShadertext, modelText) {
-	const scene = new renderScene(vertShadertext, fragShadertext, modelText);
+window.runDemo = function (vertShadertext, fragShadertext, diffuseShadertext, modelText) {
+	const scene = new renderScene(vertShadertext, fragShadertext, diffuseShadertext, modelText);
 };
 
-var renderScene = function(vertShadertext, fragShadertext, modelText) {
+var renderScene = function(vertShadertext, fragShadertext, diffuseShadertext, modelText) {
 	const self = this;
 
 	// Intermediate matrices that calculate rotation
@@ -47,6 +48,9 @@ var renderScene = function(vertShadertext, fragShadertext, modelText) {
 
 	// Threshold for toon shader
 	self.threshold = 0.5;
+
+	// Toggle tracker for which view to render
+	self.toggleRender = true;
 
 	//get vertex and fragment shader from html file
     //I've also written these in a separate file, but since js can't access locally with a webserver, this is the alt solution.
@@ -84,8 +88,12 @@ var renderScene = function(vertShadertext, fragShadertext, modelText) {
 		 mat4.multiply(vmMatrix, viewMatrix, modelMatrix);
 		 mat4.multiply(pvmMatrix, projMatrix, vmMatrix);
 		 
-		 objectsInScene.render(gl, program, model, pvmMatrix, vmMatrix, light, self.threshold);
-
+		 if (self.toggleRender == true) {
+			objectsInScene.render(gl, program, model, pvmMatrix, vmMatrix, light, self.threshold);
+		 }
+		 else {
+			objectsInScene.render(gl, program_diffuse, model, pvmMatrix, vmMatrix, light, self.threshold);
+		 }
 	}
 	
 
@@ -114,10 +122,12 @@ var renderScene = function(vertShadertext, fragShadertext, modelText) {
 	// 
 	var vertexShader = gl.createShader(gl.VERTEX_SHADER);
 	var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+	let diffShader = gl.createShader(gl.FRAGMENT_SHADER);
 
 	// Set the source of the shaders, in html file
 	gl.shaderSource(vertexShader, vertShaderSource);
 	gl.shaderSource(fragmentShader, fragShaderSource);
+	gl.shaderSource(diffShader, diffuseShadertext);
 
 	gl.compileShader(vertexShader);
 	if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
@@ -130,6 +140,29 @@ var renderScene = function(vertShadertext, fragShadertext, modelText) {
 		console.error('ERROR compiling fragment shader!', gl.getShaderInfoLog(fragmentShader));
 		return;
 	}
+
+	gl.compileShader(diffShader);
+	if (!gl.getShaderParameter(diffShader, gl.COMPILE_STATUS)) {
+		console.error('ERROR compiling diffuse fragment shader!', gl.getShaderInfoLog(diffShader));
+		return;
+	}
+
+	// Create diffuse shader program alternative
+	let program_diffuse = gl.createProgram();
+	gl.attachShader(program_diffuse, vertexShader);
+	gl.attachShader(program_diffuse, diffShader);
+	gl.linkProgram(program_diffuse); // Link the program
+
+	if (!gl.getProgramParameter(program_diffuse, gl.LINK_STATUS)) {
+		console.error('ERROR linking program!', gl.getProgramInfoLog(program_diffuse));
+		return;
+	}
+	gl.validateProgram(program_diffuse);
+	if (!gl.getProgramParameter(program_diffuse, gl.VALIDATE_STATUS)) {
+		console.error('ERROR validating program!', gl.getProgramInfoLog(program_diffuse));
+		return;
+	}
+
 
 	// create the current webGL Program, attach vertex and fragment shader to program
 	let program = gl.createProgram();
@@ -152,7 +185,7 @@ var renderScene = function(vertShadertext, fragShadertext, modelText) {
 	// Create light model
 	const light = createLight();
 
-	const objectsInScene = new Render(gl, program, model, self.canvas, light);
+	const objectsInScene = new Render(model);
 
 	const events = new eventHandler(self);
 	events.animate();

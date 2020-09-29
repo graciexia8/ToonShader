@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    p {
+    p, label {
       font-family: sans-serif;
     }
 
@@ -12,6 +12,12 @@
       display: flex;
       flex-wrap: wrap;
     }
+
+    .modifiers {
+      display: flex;
+      flex-direction: column;
+    }
+
   </style>
   </style>
 </head>
@@ -23,9 +29,15 @@
         browser does not support html5
       </canvas>
     </div>
-    <div class="slidecontainer">
-      <p>Threshold: <span id="thresholdVal"></span></p>
-      <input id="threshold_id" type="range" min="0" max="100" value="50">
+    <div class="modifiers">
+      <div class="slidecontainer">
+        <p>Threshold: <span id="thresholdVal"></span></p>
+        <input id="threshold_id" type="range" min="0" max="100" value="50">
+      </div>
+      <div class="toggleContainer">
+        <input type="checkbox" id="renderOption" name="RenderOption" checked>
+        <label for="RenderOption"> Toggle Rendering</label><br>
+      </div>
     </div>
   </div>
   <script src="lib/gl-matrix.js"></script>

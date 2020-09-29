@@ -1,6 +1,6 @@
 "use strict";
 
-window.Render = function(gl, program, model, canvas, lightModel){
+window.Render = function(model){
     const self = this;
 
     function _createBufferObject(gl, data) {
