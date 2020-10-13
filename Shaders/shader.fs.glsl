@@ -11,6 +11,7 @@
 
       // Threshold value
       uniform float u_Threshold;
+      uniform float u_rim_Threshold;
 
       // Data (to be interpolated) that is passed on to the fragment shader
       varying vec3 v_Vertex;
@@ -24,6 +25,8 @@
         vec3 reflection;
         vec3 to_camera;
         float cos_angle;
+        float z_component;
+        float halo_color;
 
         vec3 ambient_color;
         vec3 diffuse_color;
@@ -47,13 +50,15 @@
         cos_angle = dot(vertex_normal, to_light);
         cos_angle = clamp(cos_angle, 0.0, 1.0);
 
-        if (cos_angle > u_Threshold){
+        z_component = vertex_normal.z;
+        halo_color = 1.0 - abs(z_component);
+        
+        if (cos_angle > u_Threshold || halo_color > u_rim_Threshold){
           diffuse_color =  vec3(1.0, 1.0, 1.0);
         }
         else {
           diffuse_color =  vec3(0.0, 0.0, 0.0);
         }
-        // diffuse_color =  u_Color.xyz * cos_angle;
       
         // Calculate the reflection vector
         // reflection = 2.0 * dot(vertex_normal, to_light) * vertex_normal - to_light;

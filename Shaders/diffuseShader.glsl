@@ -24,9 +24,11 @@
         vec3 reflection;
         vec3 to_camera;
         float cos_angle;
+        float z_component;
 
         vec3 ambient_color;
         vec3 diffuse_color;
+        vec3 halo_color;
         vec3 specular_color;
         vec3 color;
 
@@ -48,30 +50,30 @@
         cos_angle = clamp(cos_angle, 0.0, 1.0);
 
         diffuse_color =  u_Color.xyz * cos_angle;
+
+        // //Calculate the reflection vector
+        // reflection = 2.0 * dot(vertex_normal, to_light) * vertex_normal - to_light;
       
-        //Calculate the reflection vector
-        reflection = 2.0 * dot(vertex_normal, to_light) * vertex_normal - to_light;
-      
-        // Calculate a vector from the fragment location to the camera.
-        // The camera is at the origin, so negating the vertex location gives the vector
-        to_camera = -1.0 * v_Vertex;
+        // // Calculate a vector from the fragment location to the camera.
+        // // The camera is at the origin, so negating the vertex location gives the vector
+        // to_camera = -1.0 * v_Vertex;
 
-        // Calculate the cosine of the angle between the reflection vector
-        // and the vector going to the camera.
-        reflection = normalize( reflection );
-        to_camera = normalize( to_camera );
-        cos_angle = dot(reflection, to_camera);
-        cos_angle = clamp(cos_angle, 0.0, 1.0);
-        cos_angle = pow(cos_angle, u_shininess);
+        // // Calculate the cosine of the angle between the reflection vector
+        // // and the vector going to the camera.
+        // reflection = normalize( reflection );
+        // to_camera = normalize( to_camera );
+        // cos_angle = dot(reflection, to_camera);
+        // cos_angle = clamp(cos_angle, 0.0, 1.0);
+        // cos_angle = pow(cos_angle, u_shininess);
 
-        // The specular color is from the light source, not the object
-        if (cos_angle > 0.0) {
-          specular_color = u_light_Color * cos_angle;
-          diffuse_color = diffuse_color * (1.0 - cos_angle);
-        } else {
-          specular_color = vec3(0.0, 0.0, 0.0);
-        }
-        color = diffuse_color + ambient_color + specular_color;
-
+        // // The specular color is from the light source, not the object
+        // if (cos_angle > 0.0) {
+        //   specular_color = u_light_Color * cos_angle;
+        //   diffuse_color = diffuse_color * (1.0 - cos_angle);
+        // } else {
+        //   specular_color = vec3(0.0, 0.0, 0.0);
+        // }
+        // color = diffuse_color + ambient_color + specular_color;
+        color = diffuse_color;
         gl_FragColor = vec4(color,  u_Color.a);
       }

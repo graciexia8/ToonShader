@@ -5,19 +5,20 @@ window.InitDemo = async function() {
 		const vertexShader = await loadTextResource("./Shaders/shader.vs.glsl");
 		const fragmentShader = await loadTextResource("./Shaders/shader.fs.glsl");
 		const diffuseShader = await loadTextResource("./Shaders/diffuseShader.glsl");
+		const rimLightShader = await loadTextResource("./Shaders/rimLightingShader.glsl");
 		const modelData = await loadJSONResource("./models/json_models/blancDeChine.json");
-		runDemo(vertexShader, fragmentShader, diffuseShader, modelData);
+		runDemo(vertexShader, fragmentShader, diffuseShader, rimLightShader, modelData);
 	}
 	catch(e){
 		alert(e);
 	}
 };
 
-window.runDemo = function (vertShadertext, fragShadertext, diffuseShadertext, modelText) {
-	const scene = new renderScene(vertShadertext, fragShadertext, diffuseShadertext, modelText);
+window.runDemo = function (vertShadertext, fragShadertext, diffuseShadertext, rimLightShadertext, modelText) {
+	const scene = new renderScene(vertShadertext, fragShadertext, diffuseShadertext, rimLightShadertext, modelText);
 };
 
-var renderScene = function(vertShadertext, fragShadertext, diffuseShadertext, modelText) {
+var renderScene = function(vertShadertext, fragShadertext, diffuseShadertext, rimLightShadertext, modelText) {
 	const self = this;
 
 	// Intermediate matrices that calculate rotation
@@ -42,15 +43,22 @@ var renderScene = function(vertShadertext, fragShadertext, diffuseShadertext, mo
 	let scaleMatrix = mat4.create();
 	mat4.scale(scaleMatrix, identityMatrix, [1.7,1.7,1.7]);
 
+	let outlineMatrix = mat4.create();
+	mat4.scale(outlineMatrix, identityMatrix, [1.9, 1.9, 1.9]);
+
 	// Public variables that will possibly be used or changed by event handlers.
 	self.angleX = 0.0;
 	self.angleY = 0.0;
 
 	// Threshold for toon shader
 	self.threshold = 0.5;
+	// Rim Lighting Threshold for toon shader
+	self.rimLight = 0.5;
 
 	// Toggle tracker for which view to render
 	self.toggleRender = true;
+	self.toggleBackground = true;
+	self.renderOption = 0;
 
 	//get vertex and fragment shader from html file
     //I've also written these in a separate file, but since js can't access locally with a webserver, this is the alt solution.
@@ -63,37 +71,45 @@ var renderScene = function(vertShadertext, fragShadertext, diffuseShadertext, mo
 
 	//-----------------------------------------------------------------------
 	self.render = function () {
+
+		// Toggle background between balck and white
+		if (self.toggleBackground) {
+			gl.clearColor(0.0, 0.0, 0.0, 1.0);
+		}
+		else {
+			gl.clearColor(1.0, 1.0, 1.0, 1.0);
+		}
 		// Clear the color buffer and depth buffer so program can do hidden surface removal
-		gl.clearColor(1.0, 1.0, 1.0, 1.0);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
  
 		 // Set the model, view, projection matrices
 		 mat4.identity(modelMatrix);
 		 mat4.lookAt(viewMatrix, [0, 0, -8], [0, 0, 0], [0, 1, 0]);
-		 mat4.perspective(projMatrix, glMatrix.toRadian(45), self.canvas.clientWidth / self.canvas.clientHeight, 0.1, 1000.0);
-
-		//  console.log(self.threshold);
-		 
+		 mat4.perspective(projMatrix, glMatrix.toRadian(45), self.canvas.clientWidth / self.canvas.clientHeight, 0.1, 1000.0);		 
  
 		 // The final pre-processing step is to get the location of the variable in your shader program that will access the texture map.
-		 // const u_Sampler = gl.getUniformLocation(program, "u_Sampler");
 
 		 mat4.rotate(xRotationMatrix, identityMatrix, self.angleX, [1.0, 0, 0]);
 		 mat4.rotate(yRotationMatrix, identityMatrix, self.angleY, [0, 1.0, 0]);
 		 mat4.mul(rotationMatrix, yRotationMatrix, xRotationMatrix);
 
-		 // mat4.scale(scaleMatrix, [2, 2, 2]);
 		 mat4.mul(modelMatrix,scaleMatrix, rotationMatrix);
 
 		 mat4.multiply(vmMatrix, viewMatrix, modelMatrix);
 		 mat4.multiply(pvmMatrix, projMatrix, vmMatrix);
 		 
-		 if (self.toggleRender == true) {
-			objectsInScene.render(gl, program, model, pvmMatrix, vmMatrix, light, self.threshold);
+		 switch (self.renderOption) {
+			case 0:
+				objectInScene.render(gl, program, model, pvmMatrix, vmMatrix, light, self.threshold, self.rimLight);
+				break;
+			case 1:
+				objectInScene.render(gl, program_diffuse, model, pvmMatrix, vmMatrix, light, self.threshold, self.rimLight);
+				break;
+			case 2:
+				objectInScene.render(gl, program_rimLight, model, pvmMatrix, vmMatrix, light, self.threshold, self.rimLight);
+				break;
 		 }
-		 else {
-			objectsInScene.render(gl, program_diffuse, model, pvmMatrix, vmMatrix, light, self.threshold);
-		 }
+
 	}
 	
 
@@ -107,7 +123,7 @@ var renderScene = function(vertShadertext, fragShadertext, diffuseShadertext, mo
 	}
 
 	// Clear the color buffer and depth buffer so program can do hidden surface removal
-	gl.clearColor(0.0, 0.0, 0.0, 1.0);
+	gl.clearColor(1.0, 1.0, 1.0, 1.0);
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	gl.enable(gl.DEPTH_TEST); // Enable hidden surface removel
 	gl.enable(gl.CULL_FACE);
@@ -123,11 +139,13 @@ var renderScene = function(vertShadertext, fragShadertext, diffuseShadertext, mo
 	var vertexShader = gl.createShader(gl.VERTEX_SHADER);
 	var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
 	let diffShader = gl.createShader(gl.FRAGMENT_SHADER);
+	let rimShader = gl.createShader(gl.FRAGMENT_SHADER);
 
 	// Set the source of the shaders, in html file
 	gl.shaderSource(vertexShader, vertShaderSource);
 	gl.shaderSource(fragmentShader, fragShaderSource);
 	gl.shaderSource(diffShader, diffuseShadertext);
+	gl.shaderSource(rimShader, rimLightShadertext);
 
 	gl.compileShader(vertexShader);
 	if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
@@ -144,6 +162,12 @@ var renderScene = function(vertShadertext, fragShadertext, diffuseShadertext, mo
 	gl.compileShader(diffShader);
 	if (!gl.getShaderParameter(diffShader, gl.COMPILE_STATUS)) {
 		console.error('ERROR compiling diffuse fragment shader!', gl.getShaderInfoLog(diffShader));
+		return;
+	}
+
+	gl.compileShader(rimShader);
+	if (!gl.getShaderParameter(rimShader, gl.COMPILE_STATUS)) {
+		console.error('ERROR compiling rim light fragment shader!', gl.getShaderInfoLog(rimShader));
 		return;
 	}
 
@@ -164,6 +188,21 @@ var renderScene = function(vertShadertext, fragShadertext, diffuseShadertext, mo
 		return;
 	}
 
+	let program_rimLight = gl.createProgram();
+	gl.attachShader(program_rimLight, vertexShader);
+	gl.attachShader(program_rimLight, rimShader);
+	gl.linkProgram(program_rimLight); // Link the program
+
+	if (!gl.getProgramParameter(program_rimLight, gl.LINK_STATUS)) {
+		console.error('ERROR linking program!', gl.getProgramInfoLog(program_rimLight));
+		return;
+	}
+
+	gl.validateProgram(program_rimLight);
+	if (!gl.getProgramParameter(program_rimLight, gl.VALIDATE_STATUS)) {
+		console.error('ERROR validating program!', gl.getProgramInfoLog(program_rimLight));
+		return;
+	}
 
 	// create the current webGL BW Program, attach vertex and fragment shader to program
 	let program = gl.createProgram();
@@ -188,7 +227,8 @@ var renderScene = function(vertShadertext, fragShadertext, diffuseShadertext, mo
 	const light = createLight();
 
 	// Create a render object for the objects in the scene
-	const objectsInScene = new Render(model);
+	const objectInScene = new Render(model);
+	const objectOutline = new Render(model);
 
 	const events = new eventHandler(self);
 	events.animate();

@@ -11,8 +11,16 @@ function eventHandler(scene) {
   const thresholdSlider = document.getElementById("threshold_id");
   const thresholdOutput = document.getElementById("thresholdVal");
 
+  // Rim lighting Elements
+  const rimSlider = document.getElementById("rim_id");
+  const rimOutput = document.getElementById("rimVal");
+
   // Toggle HTML elements
-  const toggleCheckbox = document.getElementById("renderOption");
+  // const toggleCheckbox = document.getElementById("renderOption");
+  const diffuseButton = document.getElementById("diffuseOption");
+  const rimLightButton = document.getElementById("rimLightOption");
+  const bwButton = document.getElementById("bwOption");
+  const toggleBackground = document.getElementById("backgroundOption");
 
   // Private variables
   const canvas = scene.canvas;
@@ -67,22 +75,55 @@ function eventHandler(scene) {
     canvas.addEventListener('mouseup', self.mouse_drag_ended, false);
     canvas.addEventListener('mousemove', self.mouse_dragged, false);
 
-    toggleCheckbox.addEventListener( 'click', function() {
+    // Toggle between backgrounds
+    toggleBackground.addEventListener( 'click', function() {
       // If the checkbox is checked, display the output text
-      if (toggleCheckbox.checked == true){
-        console.log("checked");
-        scene.toggleRender = true;
+      if (toggleBackground.checked == true){
+        scene.toggleBackground = true;
       } else {
-        console.log("unchecked");
-        scene.toggleRender = false;
+        scene.toggleBackground = false;
       }
     });
+
+    bwButton.addEventListener( 'click', function() {
+      scene.renderOption = 0;
+      console.log("BLACK & WHITE RENDER");
+    })
+
+    diffuseButton.addEventListener( 'click', function() {
+      scene.renderOption = 1;
+      console.log("DIFFUSE RENDER");
+    })
+
+    rimLightButton.addEventListener( 'click', function() {
+      scene.renderOption = 2;
+      console.log("RIM LIGHT RENDER");
+    })
+    
+    // toggleCheckbox.addEventListener( 'click', function() {
+    //   // If the checkbox is checked, display the output text
+    //   if (toggleCheckbox.checked == true){
+    //     console.log("checked");
+    //     scene.toggleRender = true;
+    //   } else {
+    //     console.log("unchecked");
+    //     scene.toggleRender = false;
+    //   }
+    // });
 
     // Read Threshold Slider value into object to Render
     // Threshold goes from 0.0-1.0
     thresholdSlider.oninput = function() {
         thresholdOutput.innerHTML = this.value;
         scene.threshold = parseFloat(this.value/100);
+    }
+
+    
+    // Read Threshold Slider value into object to Render
+    // Threshold goes from 0.0-1.0
+    rimSlider.oninput = function() {
+      rimOutput.innerHTML = this.value;
+      scene.rimLight = parseFloat(this.value/100);
     }
   };
 

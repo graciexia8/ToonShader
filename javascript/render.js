@@ -21,12 +21,14 @@ window.Render = function(model){
         return buffer_id;
     }
     
-    self.render = function (gl, program, model, pvmMatrix, vmMatrix, light, threshold) {
+    self.render = function (gl, program, model, pvmMatrix, vmMatrix, light, threshold, rimLight) {
         // Get uniform locations of things
         const u_Color_location  = gl.getUniformLocation(program, 'u_Color');
 
         // Get Threshold Value location
         const u_Threshold_location  = gl.getUniformLocation(program, 'u_Threshold');
+        // Get Threshold Value location
+        const u_Rim_Threshold_location  = gl.getUniformLocation(program, 'u_rim_Threshold');
         
         // Get Light Model locations of things
         const u_light_direction = gl.getUniformLocation(program, 'u_light_Direction');
@@ -94,6 +96,8 @@ window.Render = function(model){
         gl.uniform1f(u_ambient_Percentage, light.ambientPercentage);
         gl.uniform1f(u_shininess, light.shininess);
         gl.uniform1f(u_Threshold_location, threshold);
+        gl.uniform1f(u_Rim_Threshold_location, rimLight);
+
 
         // set the new pvm and vm matrices since our model matrix changes
         gl.uniformMatrix4fv(pvmUniformLocation, false, pvmMatrix);

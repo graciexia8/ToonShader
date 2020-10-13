@@ -16,6 +16,7 @@
     .modifiers {
       display: flex;
       flex-direction: column;
+      padding-left: 10px;
     }
 
   </style>
@@ -33,10 +34,19 @@
       <div class="slidecontainer">
         <p>Threshold: <span id="thresholdVal"></span></p>
         <input id="threshold_id" type="range" min="0" max="100" value="50">
+        <p>Rim Lighting: <span id="rimVal"></span></p>
+        <input id="rim_id" type="range" min="0" max="100" value="50">
       </div>
-      <div class="toggleContainer">
+      <button type="button" id="diffuseOption">Diffuse Lighting</button>
+      <button type="button" id="bwOption">Black & White</button>
+      <button type="button" id="rimLightOption">Rim Lighting</button>
+      <!-- <div class="toggleContainer">
         <input type="checkbox" id="renderOption" name="RenderOption" checked>
         <label for="RenderOption"> Toggle Rendering</label><br>
+      </div> -->
+      <div class="toggleContainer">
+        <input type="checkbox" id="backgroundOption" name="backgroundOption" checked>
+        <label for="backgroundOption"> Background Colour</label><br>
       </div>
     </div>
   </div>
