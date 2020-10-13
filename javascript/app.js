@@ -88,16 +88,15 @@ var renderScene = function(vertShadertext, fragShadertext, diffuseShadertext, ri
 		 mat4.perspective(projMatrix, glMatrix.toRadian(45), self.canvas.clientWidth / self.canvas.clientHeight, 0.1, 1000.0);		 
  
 		 // The final pre-processing step is to get the location of the variable in your shader program that will access the texture map.
-
 		 mat4.rotate(xRotationMatrix, identityMatrix, self.angleX, [1.0, 0, 0]);
 		 mat4.rotate(yRotationMatrix, identityMatrix, self.angleY, [0, 1.0, 0]);
 		 mat4.mul(rotationMatrix, yRotationMatrix, xRotationMatrix);
 
 		 mat4.mul(modelMatrix,scaleMatrix, rotationMatrix);
-
 		 mat4.multiply(vmMatrix, viewMatrix, modelMatrix);
 		 mat4.multiply(pvmMatrix, projMatrix, vmMatrix);
 		 
+		 // Redner depending on which option is clicked
 		 switch (self.renderOption) {
 			case 0:
 				objectInScene.render(gl, program, model, pvmMatrix, vmMatrix, light, self.threshold, self.rimLight);
@@ -109,9 +108,46 @@ var renderScene = function(vertShadertext, fragShadertext, diffuseShadertext, ri
 				objectInScene.render(gl, program_rimLight, model, pvmMatrix, vmMatrix, light, self.threshold, self.rimLight);
 				break;
 		 }
-
 	}
+
+	// Compile the given shader and validate with correct error message
+	self.compileShaderAndValidate = function(shader, errMsgValue) {
+		gl.compileShader(shader);
+		let errMsg ='err';
+		switch (errMsgValue) {
+			case 0:
+				errMsg = 'ERROR compiling vertex shader!';
+				break;
+			case 1:
+				errMsg = 'ERROR compiling bw fragment shader!';
+				break;
+			case 2:
+				errMsg = 'ERROR compiling diffuse fragment shader!';
+				break;
+			case 4:
+				errMsg = 'ERROR compiling rim light fragment shader!'
+				break;
+		}
+
+		if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+			console.error(errMsgValue, gl.getShaderInfoLog(shader));
+			return;
+		}
+	}
+
+	// Link the shader and validate
+	self.ValidateLinkedShader = function(program) {
+		if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+			console.error('ERROR linking program!', gl.getProgramInfoLog(program));
+			return;
+		}
 	
+		gl.validateProgram(program);
+		if (!gl.getProgramParameter(program, gl.VALIDATE_STATUS)) {
+			console.error('ERROR validating program!', gl.getProgramInfoLog(program));
+			return;
+		}
+	}
 
 	if (!gl) {
 		console.log('WebGL not supported, falling back on experimental-webgl');
@@ -147,29 +183,11 @@ var renderScene = function(vertShadertext, fragShadertext, diffuseShadertext, ri
 	gl.shaderSource(diffShader, diffuseShadertext);
 	gl.shaderSource(rimShader, rimLightShadertext);
 
-	gl.compileShader(vertexShader);
-	if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
-		console.error('ERROR compiling vertex shader!', gl.getShaderInfoLog(vertexShader));
-		return;
-	}
-
-	gl.compileShader(fragmentShader);
-	if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
-		console.error('ERROR compiling bw fragment shader!', gl.getShaderInfoLog(fragmentShader));
-		return;
-	}
-
-	gl.compileShader(diffShader);
-	if (!gl.getShaderParameter(diffShader, gl.COMPILE_STATUS)) {
-		console.error('ERROR compiling diffuse fragment shader!', gl.getShaderInfoLog(diffShader));
-		return;
-	}
-
-	gl.compileShader(rimShader);
-	if (!gl.getShaderParameter(rimShader, gl.COMPILE_STATUS)) {
-		console.error('ERROR compiling rim light fragment shader!', gl.getShaderInfoLog(rimShader));
-		return;
-	}
+	// Compile all the vertex and fragment shaders, and validate the correctness.
+	self.compileShaderAndValidate(vertexShader, 0);
+	self.compileShaderAndValidate(fragmentShader, 1);
+	self.compileShaderAndValidate(diffShader, 2);
+	self.compileShaderAndValidate(rimShader, 3);
 
 	// Create diffuse shader program alternative, attach vertex and fragment shader to program
 	let program_diffuse = gl.createProgram();
@@ -177,32 +195,16 @@ var renderScene = function(vertShadertext, fragShadertext, diffuseShadertext, ri
 	gl.attachShader(program_diffuse, diffShader);
 	gl.linkProgram(program_diffuse); // Link the program
 
-	if (!gl.getProgramParameter(program_diffuse, gl.LINK_STATUS)) {
-		console.error('ERROR linking program!', gl.getProgramInfoLog(program_diffuse));
-		return;
-	}
-
-	gl.validateProgram(program_diffuse);
-	if (!gl.getProgramParameter(program_diffuse, gl.VALIDATE_STATUS)) {
-		console.error('ERROR validating program!', gl.getProgramInfoLog(program_diffuse));
-		return;
-	}
+	// Validate if linking worked
+	self.ValidateLinkedShader(program_diffuse);
 
 	let program_rimLight = gl.createProgram();
 	gl.attachShader(program_rimLight, vertexShader);
 	gl.attachShader(program_rimLight, rimShader);
 	gl.linkProgram(program_rimLight); // Link the program
 
-	if (!gl.getProgramParameter(program_rimLight, gl.LINK_STATUS)) {
-		console.error('ERROR linking program!', gl.getProgramInfoLog(program_rimLight));
-		return;
-	}
-
-	gl.validateProgram(program_rimLight);
-	if (!gl.getProgramParameter(program_rimLight, gl.VALIDATE_STATUS)) {
-		console.error('ERROR validating program!', gl.getProgramInfoLog(program_rimLight));
-		return;
-	}
+	// Validate if linking worked
+	self.ValidateLinkedShader(program_rimLight);
 
 	// create the current webGL BW Program, attach vertex and fragment shader to program
 	let program = gl.createProgram();
@@ -210,16 +212,8 @@ var renderScene = function(vertShadertext, fragShadertext, diffuseShadertext, ri
 	gl.attachShader(program, fragmentShader);
 	gl.linkProgram(program); // Link the program
 
-	if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-		console.error('ERROR linking program!', gl.getProgramInfoLog(program));
-		return;
-	}
-
-	gl.validateProgram(program);
-	if (!gl.getProgramParameter(program, gl.VALIDATE_STATUS)) {
-		console.error('ERROR validating program!', gl.getProgramInfoLog(program));
-		return;
-	}
+	// Validate if linking worked
+	self.ValidateLinkedShader(program);
 
 	// Create a model with ll buffer objects available.
 	const model = createModel(modelText);
@@ -228,7 +222,6 @@ var renderScene = function(vertShadertext, fragShadertext, diffuseShadertext, ri
 
 	// Create a render object for the objects in the scene
 	const objectInScene = new Render(model);
-	const objectOutline = new Render(model);
 
 	const events = new eventHandler(self);
 	events.animate();

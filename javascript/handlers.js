@@ -85,31 +85,23 @@ function eventHandler(scene) {
       }
     });
 
+    // Event handler for black and white rendering
     bwButton.addEventListener( 'click', function() {
       scene.renderOption = 0;
       console.log("BLACK & WHITE RENDER");
     })
 
+    // Event handler for diffuse rendering
     diffuseButton.addEventListener( 'click', function() {
       scene.renderOption = 1;
       console.log("DIFFUSE RENDER");
     })
 
+    // Event handler for rim light rendering
     rimLightButton.addEventListener( 'click', function() {
       scene.renderOption = 2;
       console.log("RIM LIGHT RENDER");
     })
-    
-    // toggleCheckbox.addEventListener( 'click', function() {
-    //   // If the checkbox is checked, display the output text
-    //   if (toggleCheckbox.checked == true){
-    //     console.log("checked");
-    //     scene.toggleRender = true;
-    //   } else {
-    //     console.log("unchecked");
-    //     scene.toggleRender = false;
-    //   }
-    // });
 
     // Read Threshold Slider value into object to Render
     // Threshold goes from 0.0-1.0
@@ -118,8 +110,7 @@ function eventHandler(scene) {
         scene.threshold = parseFloat(this.value/100);
     }
 
-    
-    // Read Threshold Slider value into object to Render
+    // Read rim Threshold Slider value into object to Render
     // Threshold goes from 0.0-1.0
     rimSlider.oninput = function() {
       rimOutput.innerHTML = this.value;
