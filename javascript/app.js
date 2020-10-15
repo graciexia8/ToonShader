@@ -41,10 +41,13 @@ var renderScene = function(vertShadertext, fragShadertext, diffuseShadertext, ri
 
 	//create a scale matrix
 	let scaleMatrix = mat4.create();
-	mat4.scale(scaleMatrix, identityMatrix, [1.7,1.7,1.7]);
+	mat4.scale(scaleMatrix, identityMatrix, [1,1,1]);
 
-	let outlineMatrix = mat4.create();
-	mat4.scale(outlineMatrix, identityMatrix, [1.9, 1.9, 1.9]);
+	// Translation matrices
+	let translationMatrix1 = mat4.create();
+	mat4.translate(translationMatrix1, identityMatrix, [0, 0, 0]);
+	let translationMatrix2 = mat4.create();
+	mat4.translate(translationMatrix2, identityMatrix, [-3, -1, 1]);
 
 	// Public variables that will possibly be used or changed by event handlers.
 	self.angleX = 0.0;
@@ -84,7 +87,7 @@ var renderScene = function(vertShadertext, fragShadertext, diffuseShadertext, ri
  
 		 // Set the model, view, projection matrices
 		 mat4.identity(modelMatrix);
-		 mat4.lookAt(viewMatrix, [0, 0, -8], [0, 0, 0], [0, 1, 0]);
+		 mat4.lookAt(viewMatrix, [5, 4, 0], [0, 0, 0], [1, 1, 0]);
 		 mat4.perspective(projMatrix, glMatrix.toRadian(45), self.canvas.clientWidth / self.canvas.clientHeight, 0.1, 1000.0);		 
  
 		 // The final pre-processing step is to get the location of the variable in your shader program that will access the texture map.
@@ -93,6 +96,7 @@ var renderScene = function(vertShadertext, fragShadertext, diffuseShadertext, ri
 		 mat4.mul(rotationMatrix, yRotationMatrix, xRotationMatrix);
 
 		 mat4.mul(modelMatrix,scaleMatrix, rotationMatrix);
+		 mat4.mul(modelMatrix, modelMatrix, translationMatrix1);
 		 mat4.multiply(vmMatrix, viewMatrix, modelMatrix);
 		 mat4.multiply(pvmMatrix, projMatrix, vmMatrix);
 		 
@@ -100,12 +104,24 @@ var renderScene = function(vertShadertext, fragShadertext, diffuseShadertext, ri
 		 switch (self.renderOption) {
 			case 0:
 				objectInScene.render(gl, program, model, pvmMatrix, vmMatrix, light, self.threshold, self.rimLight);
+				mat4.mul(modelMatrix, modelMatrix, translationMatrix2);
+				mat4.multiply(vmMatrix, viewMatrix, modelMatrix);
+				mat4.multiply(pvmMatrix, projMatrix, vmMatrix);
+				object2.render(gl, program, model, pvmMatrix, vmMatrix, light, self.threshold, self.rimLight);
 				break;
 			case 1:
 				objectInScene.render(gl, program_diffuse, model, pvmMatrix, vmMatrix, light, self.threshold, self.rimLight);
+				mat4.mul(modelMatrix, modelMatrix, translationMatrix2);
+				mat4.multiply(vmMatrix, viewMatrix, modelMatrix);
+				mat4.multiply(pvmMatrix, projMatrix, vmMatrix);
+				object2.render(gl, program_diffuse, model, pvmMatrix, vmMatrix, light, self.threshold, self.rimLight);
 				break;
 			case 2:
 				objectInScene.render(gl, program_rimLight, model, pvmMatrix, vmMatrix, light, self.threshold, self.rimLight);
+				mat4.mul(modelMatrix, modelMatrix, translationMatrix2);
+				mat4.multiply(vmMatrix, viewMatrix, modelMatrix);
+				mat4.multiply(pvmMatrix, projMatrix, vmMatrix);
+				object2.render(gl, program_rimLight, model, pvmMatrix, vmMatrix, light, self.threshold, self.rimLight);
 				break;
 		 }
 	}
@@ -222,6 +238,7 @@ var renderScene = function(vertShadertext, fragShadertext, diffuseShadertext, ri
 
 	// Create a render object for the objects in the scene
 	const objectInScene = new Render(model);
+	const object2 = new Render(model);
 
 	const events = new eventHandler(self);
 	events.animate();
