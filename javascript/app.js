@@ -6,7 +6,7 @@ window.InitDemo = async function() {
 		const fragmentShader = await loadTextResource("./Shaders/shader.fs.glsl");
 		const diffuseShader = await loadTextResource("./Shaders/diffuseShader.glsl");
 		const rimLightShader = await loadTextResource("./Shaders/rimLightingShader.glsl");
-		const modelData = await loadJSONResource("./models/json_models/blancDeChine.json");
+		const modelData = await loadJSONResource("./models/json_models/guanWare.json");
 		runDemo(vertexShader, fragmentShader, diffuseShader, rimLightShader, modelData);
 	}
 	catch(e){
@@ -16,10 +16,14 @@ window.InitDemo = async function() {
 
 window.runDemo = function (vertShadertext, fragShadertext, diffuseShadertext, rimLightShadertext, modelText) {
 	const scene = new renderScene(vertShadertext, fragShadertext, diffuseShadertext, rimLightShadertext, modelText);
+	// create edges to detect
 };
 
 var renderScene = function(vertShadertext, fragShadertext, diffuseShadertext, rimLightShadertext, modelText) {
 	const self = this;
+
+	// a test
+	const silhouetteEdges = edgeDetect(modelText);
 
 	// Intermediate matrices that calculate rotation
 	let xRotationMatrix = mat4.create();
@@ -104,24 +108,24 @@ var renderScene = function(vertShadertext, fragShadertext, diffuseShadertext, ri
 		 switch (self.renderOption) {
 			case 0:
 				objectInScene.render(gl, program, model, pvmMatrix, vmMatrix, light, self.threshold, self.rimLight);
-				mat4.mul(modelMatrix, modelMatrix, translationMatrix2);
-				mat4.multiply(vmMatrix, viewMatrix, modelMatrix);
-				mat4.multiply(pvmMatrix, projMatrix, vmMatrix);
-				object2.render(gl, program, model, pvmMatrix, vmMatrix, light, self.threshold, self.rimLight);
+				// mat4.mul(modelMatrix, modelMatrix, translationMatrix2);
+				// mat4.multiply(vmMatrix, viewMatrix, modelMatrix);
+				// mat4.multiply(pvmMatrix, projMatrix, vmMatrix);
+				// object2.render(gl, program, model, pvmMatrix, vmMatrix, light, self.threshold, self.rimLight);
 				break;
 			case 1:
 				objectInScene.render(gl, program_diffuse, model, pvmMatrix, vmMatrix, light, self.threshold, self.rimLight);
-				mat4.mul(modelMatrix, modelMatrix, translationMatrix2);
-				mat4.multiply(vmMatrix, viewMatrix, modelMatrix);
-				mat4.multiply(pvmMatrix, projMatrix, vmMatrix);
-				object2.render(gl, program_diffuse, model, pvmMatrix, vmMatrix, light, self.threshold, self.rimLight);
+				// mat4.mul(modelMatrix, modelMatrix, translationMatrix2);
+				// mat4.multiply(vmMatrix, viewMatrix, modelMatrix);
+				// mat4.multiply(pvmMatrix, projMatrix, vmMatrix);
+				// object2.render(gl, program_diffuse, model, pvmMatrix, vmMatrix, light, self.threshold, self.rimLight);
 				break;
 			case 2:
 				objectInScene.render(gl, program_rimLight, model, pvmMatrix, vmMatrix, light, self.threshold, self.rimLight);
-				mat4.mul(modelMatrix, modelMatrix, translationMatrix2);
-				mat4.multiply(vmMatrix, viewMatrix, modelMatrix);
-				mat4.multiply(pvmMatrix, projMatrix, vmMatrix);
-				object2.render(gl, program_rimLight, model, pvmMatrix, vmMatrix, light, self.threshold, self.rimLight);
+				// mat4.mul(modelMatrix, modelMatrix, translationMatrix2);
+				// mat4.multiply(vmMatrix, viewMatrix, modelMatrix);
+				// mat4.multiply(pvmMatrix, projMatrix, vmMatrix);
+				// object2.render(gl, program_rimLight, model, pvmMatrix, vmMatrix, light, self.threshold, self.rimLight);
 				break;
 		 }
 	}
@@ -232,13 +236,13 @@ var renderScene = function(vertShadertext, fragShadertext, diffuseShadertext, ri
 	self.ValidateLinkedShader(program);
 
 	// Create a model with ll buffer objects available.
-	const model = createModel(modelText);
+	const model = createModel(modelText, silhouetteEdges);
 	// Create light model
 	const light = createLight();
 
 	// Create a render object for the objects in the scene
 	const objectInScene = new Render(model);
-	const object2 = new Render(model);
+	// const object2 = new Render(model);
 
 	const events = new eventHandler(self);
 	events.animate();

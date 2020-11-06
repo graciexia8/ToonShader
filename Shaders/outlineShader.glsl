@@ -25,6 +25,7 @@
         vec3 to_camera;
         float cos_angle;
         float z_component;
+        float edge;
 
         vec3 ambient_color;
         vec3 diffuse_color;
@@ -59,6 +60,10 @@
         // The camera is at the origin, so negating the vertex location gives the vector
         to_camera = -1.0 * v_Vertex;
 
+        edge = dot(vertex_normal, to_camera);
+        edge = normalize( edge );
+        edge = 1.0 - edge;
+
         // // Calculate the cosine of the angle between the reflection vector
         // // and the vector going to the camera.
         // reflection = normalize( reflection );
@@ -85,5 +90,5 @@
         //   edge = 0.0;
         // }
 
-        gl_FragColor = vec4(diffuse_color, 1.0);
+        gl_FragColor = vec4(diffuse_color, edge);
       }

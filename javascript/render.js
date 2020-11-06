@@ -47,6 +47,8 @@ window.Render = function(model){
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, boxIndexBufferObject);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(model.indices), gl.STATIC_DRAW);
 
+        // Set silhouette indices buffer attribute
+
 
         // Set the vertex buffer attribute to 
         const boxVertexBufferObject = _createBufferObject(gl, model.vertices);
@@ -103,7 +105,13 @@ window.Render = function(model){
         gl.uniformMatrix4fv(pvmUniformLocation, false, pvmMatrix);
         gl.uniformMatrix4fv(vmUniformLocation, false, vmMatrix);
 
-        gl.drawElements(gl.TRIANGLES, model.indices.length, gl.UNSIGNED_SHORT, 0);
+        // gl.drawElements(gl.TRIANGLES, model.indices.length, gl.UNSIGNED_SHORT, boxIndexBufferObject);
+
+        let silhouetteIndexBufferObject = gl.createBuffer();
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, silhouetteIndexBufferObject);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(model.silhouetteEdgeIndices), gl.STATIC_DRAW);
+
+        gl.drawElements(gl.LINES, model.silhouetteEdgeIndices.length, gl.UNSIGNED_SHORT, silhouetteIndexBufferObject);
 
     }
    

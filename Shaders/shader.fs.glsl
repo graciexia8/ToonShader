@@ -26,16 +26,14 @@
         vec3 to_camera;
         float cos_angle;
         float z_component;
-        float halo_color;
+        float halo_percent;
+        float edge;
 
-        vec3 ambient_color;
         vec3 diffuse_color;
-        vec3 specular_color;
+        vec3 rim_color;
         vec3 color;
 
         // vec4 texel = texture2D(u_sampler, fragTexCoord);
-
-        ambient_color = (u_ambient_Percentage * u_ambient_Color) * u_Color.xyz;
 
         // Calculate a vector from the fragment location to the light source
         to_light = normalize(u_light_Direction) - v_Vertex;
@@ -45,46 +43,33 @@
         // which can make it un-normalized. So normalize the vertex's normal vector.
         vertex_normal = normalize( v_Normal );
 
+
         // Calculate the cosine of the angle between the vertex's normal vector
         // and the vector going to the light.
         cos_angle = dot(vertex_normal, to_light);
         cos_angle = clamp(cos_angle, 0.0, 1.0);
 
         z_component = vertex_normal.z;
-        halo_color = 1.0 - abs(z_component);
+        halo_percent = 1.0 - abs(z_component);
+        diffuse_color = u_Color.xyz * cos_angle;
         
-        if (cos_angle > u_Threshold || halo_color > u_rim_Threshold){
-          diffuse_color =  vec3(1.0, 1.0, 1.0);
+        // The rim color is from the light source, not the object
+        if (halo_percent > 0.0) {
+          rim_color = u_light_Color * halo_percent;
+          diffuse_color = diffuse_color * (1.0 - halo_percent);
+        } else {
+          rim_color = vec3(0.0, 0.0, 0.0);
+        }
+
+        color = diffuse_color + rim_color;
+
+        if (cos_angle > u_Threshold || halo_percent > u_rim_Threshold ){
+          color =  vec3(1.0, 1.0, 1.0);
         }
         else {
-          diffuse_color =  vec3(0.0, 0.0, 0.0);
+          color =  vec3(0.0, 0.0, 0.0);
         }
-      
-        // Calculate the reflection vector
-        // reflection = 2.0 * dot(vertex_normal, to_light) * vertex_normal - to_light;
-      
-        // // Calculate a vector from the fragment location to the camera.
-        // // The camera is at the origin, so negating the vertex location gives the vector
-        // to_camera = -1.0 * v_Vertex;
 
-        // // Calculate the cosine of the angle between the reflection vector
-        // // and the vector going to the camera.
-        // reflection = normalize( reflection );
-        // to_camera = normalize( to_camera );
-        // cos_angle = dot(reflection, to_camera);
-        // cos_angle = clamp(cos_angle, 0.0, 1.0);
-        // cos_angle = pow(cos_angle, u_shininess);
 
-        // // The specular color is from the light source, not the object
-        // if (cos_angle > 0.0) {
-        //   specular_color = u_light_Color * cos_angle;
-        //   diffuse_color = diffuse_color * (1.0 - cos_angle);
-        // } else {
-        //   specular_color = vec3(0.0, 0.0, 0.0);
-        // }
-        // color = diffuse_color + ambient_color + specular_color;
-        
-        color = diffuse_color;
-
-        gl_FragColor = vec4(color,  u_Color.a);
+        gl_FragColor = vec4(color, 1.0);
       }

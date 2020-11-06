@@ -12,14 +12,15 @@ window.simpleModel = function (name) {
 };
 
 // Model Object in Scene
-window.createModel = function (modelObj) {
-    const model = new simpleModel("flowerPot");
+window.createModel = function (modelObj, silhouetteEdges) {
+    const model = new simpleModel("pottery");
     model.indices = [].concat.apply([], modelObj.meshes[0].faces);
     // Vertex data
     model.vertices = modelObj.meshes[0].vertices;
     // White for Blanc de Chine
 	model.color = new Float32Array( [0.95, 0.96, 0.92, 1.0]); 
-	model.normals = modelObj.meshes[0].normals;
+    model.normals = modelObj.meshes[0].normals;
+    model.silhouetteEdgeIndices = silhouetteEdges;
     
     return model;
   };
