@@ -103,9 +103,15 @@ let silhouetteEdgesFinder = function(edges) {
                 var array = JSON.parse("[" + edgepair + "]");
                 silhouetteEdges.push(array[0]);
                 silhouetteEdges.push(array[1]);
-            }
+            } 
+        }
+
+        if (edges[edgepair].length == 1) {
+            // add to silhouette edges
+            var array = JSON.parse("[" + edgepair + "]");
+            silhouetteEdges.push(array[0]);
+            silhouetteEdges.push(array[1]);
         }
     }
-
     return silhouetteEdges;
 }

@@ -6,7 +6,7 @@ window.InitDemo = async function() {
 		const fragmentShader = await loadTextResource("./Shaders/shader.fs.glsl");
 		const diffuseShader = await loadTextResource("./Shaders/diffuseShader.glsl");
 		const rimLightShader = await loadTextResource("./Shaders/rimLightingShader.glsl");
-		const modelData = await loadJSONResource("./models/json_models/guanWare.json");
+		const modelData = await loadJSONResource("./models/json_models/monkey.json");
 		runDemo(vertexShader, fragmentShader, diffuseShader, rimLightShader, modelData);
 	}
 	catch(e){
@@ -107,7 +107,7 @@ var renderScene = function(vertShadertext, fragShadertext, diffuseShadertext, ri
 		 // Redner depending on which option is clicked
 		 switch (self.renderOption) {
 			case 0:
-				objectInScene.render(gl, program, model, pvmMatrix, vmMatrix, light, self.threshold, self.rimLight);
+				objectInScene.renderSilhouette(gl, program, model, pvmMatrix, vmMatrix, light, self.threshold, self.rimLight);
 				// mat4.mul(modelMatrix, modelMatrix, translationMatrix2);
 				// mat4.multiply(vmMatrix, viewMatrix, modelMatrix);
 				// mat4.multiply(pvmMatrix, projMatrix, vmMatrix);
